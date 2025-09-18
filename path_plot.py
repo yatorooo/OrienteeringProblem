@@ -1,7 +1,7 @@
 import json
 import matplotlib.pyplot as plt
 
-def plot_solution(instance_name, instances_file="instances.json", solution_file="solution_greedy.json"):
+def plot_solution(instance_name, instances_file="instances.json", solution_file="solution_greedy2opt.json"):
     # 读数据
     with open(instances_file, "r", encoding="utf-8") as f:
         instances = json.load(f)
@@ -57,7 +57,7 @@ def plot_solution(instance_name, instances_file="instances.json", solution_file=
 
 if __name__ == "__main__":
     # 修改这里的名字，选择要画的实例
-    instances_to_plot = ["instance_001", "instance_021", "instance_051", "instance_081"]
-
+    # instances_to_plot = ["instance_100", "instance_021", "instance_051", "instance_081"]
+    instances_to_plot = ["instance_090", "instance_100"]
     for name in instances_to_plot:
         plot_solution(name)

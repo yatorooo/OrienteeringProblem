@@ -1,4 +1,4 @@
-import json, math, argparse, sys
+import json, math, argparse, sys, csv, time
 from typing import List, Tuple, Dict, Any, Optional
 
 Point = Tuple[int, int]
@@ -6,7 +6,7 @@ Path = List[Point]
 LEN_LIMIT = 2000.0
 MAX_POINTS = 100
 
-# ---------- 基本几何 ----------
+# ---------- Basic geometry ----------
 def dist(a: Point, b: Point) -> float:
     return math.hypot(a[0]-b[0], a[1]-b[1])
 
@@ -63,7 +63,7 @@ def validate_path(instance: Dict[str, Any], path: Path) -> bool:
         if not (-1000 <= x <= 1000 and -1000 <= y <= 1000): return False
     return True
 
-# ---------- 贪心插入 goals ----------
+# ---------- Greedy method to insert goals ----------
 def greedy_insert_goals(start: Point, end: Point, goals: List[Point]) -> Path:
     path: Path = [start, end]
     current_len = dist(start, end)
@@ -90,7 +90,67 @@ def greedy_insert_goals(start: Point, end: Point, goals: List[Point]) -> Path:
         remaining.remove(g)
     return path
 
-# ---------- 解单个实例 ----------
+# ---------- 2-opt ----------
+def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
+    p = path[:]
+    base_len = path_length(p)
+    improved = True
+    while improved:
+        improved = False
+        n = len(p)
+        for i in range(n-3):
+            for j in range(i+2, n-1):
+                # 反转 (i+1..j) 子路径
+                newp = p[:i+1] + list(reversed(p[i+1:j+1])) + p[j+1:]
+                new_len = path_length(newp)
+                if new_len + 1e-9 < base_len and new_len < limit_length and not path_has_crossing(newp):
+                    p = newp
+                    base_len = new_len
+                    improved = True
+                    break
+            if improved:
+                break
+    return p
+
+# ---------- Refill once after 2-opt ----------
+def refill_once(path: Path, all_goals: List[Point]) -> Path:
+    """
+    在当前路径中，尝试从未访问的 goals 里挑选一个，寻找所有边的插入位置，
+    选择 delta 最小且保持合法(长度<2000、无自交、点数<=100) 的那次插入。
+    只插入一次；若找不到合法插入，原样返回。
+    """
+    p = path[:]
+    present = set(p)
+    remaining = [g for g in all_goals if g not in present]
+    if not remaining or len(p) >= MAX_POINTS:
+        return p
+
+    cur_len = path_length(p)
+    best = None  # (delta, insert_idx, goal)
+
+    for g in remaining:
+        for i in range(len(p)-1):
+            a, b = p[i], p[i+1]
+            delta = dist(a, g) + dist(g, b) - dist(a, b)
+            new_len = cur_len + delta
+            if new_len >= LEN_LIMIT:
+                continue
+            tmp = p[:i+1] + [g] + p[i+1:]
+            if path_has_crossing(tmp):
+                continue
+            if best is None or delta < best[0]:
+                best = (delta, i, g)
+
+    if best is None:
+        return p
+
+    _, idx, g = best
+    p.insert(idx+1, g)
+    return p
+
+
+
+# ---------- solve for single instance（greedy → 2-opt） ----------
 def solve_instance(instance: Dict[str, Any]) -> Path:
     starts = [tuple(p) for p in instance["start_points"]]
     ends   = [tuple(p) for p in instance["end_points"]]
@@ -103,7 +163,19 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
         for e in ends:
             if dist(s, e) >= LEN_LIMIT:
                 continue
+            # # 1) greedy 构造
+            # p = greedy_insert_goals(s, e, goals)
+            # # 2) 仅做一次 2-opt 后处理（不 refill）
+            # p = two_opt(p)
+
+            # 1) greedy 构造
             p = greedy_insert_goals(s, e, goals)
+            # 2) 2-opt 后处理（不改变点集合）
+            p = two_opt(p)
+            # 3) 再补插一次（只尝试一次）
+            p = refill_once(p, goals)
+
+
             gcount = sum(1 for g in goals if g in p)
             L = path_length(p)
             if validate_path(instance, p):
@@ -112,7 +184,7 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
                     best_key, best_path = key, p
     return best_path if best_path is not None else []
 
-# ---------- 主函数 ----------
+# ---------- main function ----------
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, help="Path to input JSON with problem instances")
@@ -124,17 +196,38 @@ def main():
         data = json.load(f)
 
     solutions: Dict[str, List[List[int]]] = {}
+    rows = []
+    
     for name, instance in data.items():
+        t_start = time.time()
         path = solve_instance(instance)
         solutions[name] = [list(p) for p in path]
+
+        goals = instance.get("goal_points", [])
+        gcount = sum(1 for g in goals if tuple(g) in path)
+        total_goals = len(goals)
+        percent = (gcount / total_goals * 100) if total_goals > 0 else 0.0
+        length = path_length(path)
+        valid = validate_path(instance, path)
+        runtime = time.time() - t_start
+
+        rows.append([name, gcount, total_goals, percent, f"{length:.2f}", valid, f"{runtime:.4f}"])
+
         if args.verbose:
-            goals = instance.get("goal_points", [])
-            gcount = sum(1 for g in goals if tuple(g) in path)
-            print(f"[{name}] goals={gcount} len={path_length(path):.2f} valid={validate_path(instance, path)}",
-                  file=sys.stderr)
+            print(f"[{name}] goals={gcount}/{total_goals} ({percent:.1f}%) "
+                f"len={length:.2f} valid={valid} runtime={runtime:.4f}s",
+                file=sys.stderr)
+
 
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(solutions, f, ensure_ascii=False, indent=2)
 
+    # write CSV log
+    with open("log_greedy2optRefill.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["instance", "goals_visited", "goals_total", "percent", "length", "valid", "runtime_s"])
+        writer.writerows(rows)
+
 if __name__ == "__main__":
     main()
+
