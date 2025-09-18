@@ -101,7 +101,6 @@ def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
         n = len(p)
         for i in range(n-3):
             for j in range(i+2, n-1):
-                # 反转 (i+1..j) 子路径
                 newp = p[:i+1] + list(reversed(p[i+1:j+1])) + p[j+1:]
                 new_len = path_length(newp)
                 if new_len + 1e-9 < base_len and new_len < limit_length and not path_has_crossing(newp):
@@ -115,11 +114,7 @@ def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
 
 # ---------- Refill once after 2-opt ----------
 def refill_once(path: Path, all_goals: List[Point]) -> Path:
-    """
-    在当前路径中，尝试从未访问的 goals 里挑选一个，寻找所有边的插入位置，
-    选择 delta 最小且保持合法(长度<2000、无自交、点数<=100) 的那次插入。
-    只插入一次；若找不到合法插入，原样返回。
-    """
+
     p = path[:]
     present = set(p)
     remaining = [g for g in all_goals if g not in present]
@@ -164,16 +159,13 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
         for e in ends:
             if dist(s, e) >= LEN_LIMIT:
                 continue
-            # # 1) greedy 构造
-            # p = greedy_insert_goals(s, e, goals)
-            # # 2) 仅做一次 2-opt 后处理（不 refill）
-            # p = two_opt(p)
 
-            # 1) greedy 构造
+
+
             p = greedy_insert_goals(s, e, goals)
-            # 2) 2-opt 后处理（不改变点集合）
+
             p = two_opt(p)
-            # 3) 再补插一次（只尝试一次）
+
             p = refill_once(p, goals)
 
 

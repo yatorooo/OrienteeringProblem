@@ -114,11 +114,6 @@ def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
 
 # ---------- Refill once after 2-opt ----------
 def refill_once(path: Path, all_goals: List[Point]) -> Path:
-    """
-    在当前路径中，尝试从未访问的 goals 里挑选一个，寻找所有边的插入位置，
-    选择 delta 最小且保持合法(长度<2000、无自交、点数<=100) 的那次插入。
-    只插入一次；若找不到合法插入，原样返回。
-    """
     p = path[:]
     present = set(p)
     remaining = [g for g in all_goals if g not in present]
