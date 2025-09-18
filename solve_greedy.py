@@ -6,7 +6,7 @@ Path = List[Point]
 LEN_LIMIT = 2000.0
 MAX_POINTS = 100
 
-# ---------- 基本几何 ----------
+# ---------- Basic geometry ----------
 def dist(a: Point, b: Point) -> float:
     return math.hypot(a[0]-b[0], a[1]-b[1])
 
@@ -63,7 +63,7 @@ def validate_path(instance: Dict[str, Any], path: Path) -> bool:
         if not (-1000 <= x <= 1000 and -1000 <= y <= 1000): return False
     return True
 
-# ---------- 贪心插入 goals ----------
+# ---------- Greedy method to insert goals ----------
 def greedy_insert_goals(start: Point, end: Point, goals: List[Point]) -> Path:
     path: Path = [start, end]
     current_len = dist(start, end)
@@ -90,7 +90,7 @@ def greedy_insert_goals(start: Point, end: Point, goals: List[Point]) -> Path:
         remaining.remove(g)
     return path
 
-# ---------- 解单个实例 ----------
+# ---------- solve for single instance（greedy → 2-opt） ----------
 def solve_instance(instance: Dict[str, Any]) -> Path:
     starts = [tuple(p) for p in instance["start_points"]]
     ends   = [tuple(p) for p in instance["end_points"]]
@@ -112,7 +112,7 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
                     best_key, best_path = key, p
     return best_path if best_path is not None else []
 
-# ---------- 主函数 ----------
+# ---------- main function ----------
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, help="Path to input JSON with problem instances")
@@ -139,7 +139,6 @@ def main():
         valid = validate_path(instance, path)
         runtime = time.time() - t_start
 
-        # 保存到内存
         rows.append([name, gcount, total_goals, percent, f"{length:.2f}", valid, f"{runtime:.4f}"])
 
         if args.verbose:
@@ -151,7 +150,7 @@ def main():
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(solutions, f, ensure_ascii=False, indent=2)
 
-    # 写 CSV log 文件
+    # write CSV log 
     with open("log_greedy.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["instance", "goals_visited", "goals_total", "percent", "length", "valid", "runtime_s"])

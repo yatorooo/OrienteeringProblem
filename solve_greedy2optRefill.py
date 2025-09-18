@@ -100,7 +100,7 @@ def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
         n = len(p)
         for i in range(n-3):
             for j in range(i+2, n-1):
-                # 反转 (i+1..j) 子路径
+                # reverse (i+1..j) 
                 newp = p[:i+1] + list(reversed(p[i+1:j+1])) + p[j+1:]
                 new_len = path_length(newp)
                 if new_len + 1e-9 < base_len and new_len < limit_length and not path_has_crossing(newp):
@@ -163,16 +163,13 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
         for e in ends:
             if dist(s, e) >= LEN_LIMIT:
                 continue
-            # # 1) greedy 构造
-            # p = greedy_insert_goals(s, e, goals)
-            # # 2) 仅做一次 2-opt 后处理（不 refill）
-            # p = two_opt(p)
 
-            # 1) greedy 构造
+
+            # 1) greedy
             p = greedy_insert_goals(s, e, goals)
-            # 2) 2-opt 后处理（不改变点集合）
+            # 2) 2-opt 
             p = two_opt(p)
-            # 3) 再补插一次（只尝试一次）
+            # 3) refill
             p = refill_once(p, goals)
 
 

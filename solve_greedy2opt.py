@@ -6,7 +6,7 @@ Path = List[Point]
 LEN_LIMIT = 2000.0
 MAX_POINTS = 100
 
-# ---------- 基本几何 ----------
+# ---------- Basic geometry ----------
 def dist(a: Point, b: Point) -> float:
     return math.hypot(a[0]-b[0], a[1]-b[1])
 
@@ -63,7 +63,7 @@ def validate_path(instance: Dict[str, Any], path: Path) -> bool:
         if not (-1000 <= x <= 1000 and -1000 <= y <= 1000): return False
     return True
 
-# ---------- 贪心插入 goals ----------
+# ---------- Greedy method to insert goals ----------
 def greedy_insert_goals(start: Point, end: Point, goals: List[Point]) -> Path:
     path: Path = [start, end]
     current_len = dist(start, end)
@@ -90,7 +90,7 @@ def greedy_insert_goals(start: Point, end: Point, goals: List[Point]) -> Path:
         remaining.remove(g)
     return path
 
-# ---------- 2-opt（仅缩短长度，不改变点集合，不做 refill） ----------
+# ---------- 2-opt ----------
 def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
     p = path[:]
     base_len = path_length(p)
@@ -100,7 +100,7 @@ def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
         n = len(p)
         for i in range(n-3):
             for j in range(i+2, n-1):
-                # 反转 (i+1..j) 子路径
+                # reverse (i+1..j) 
                 newp = p[:i+1] + list(reversed(p[i+1:j+1])) + p[j+1:]
                 new_len = path_length(newp)
                 if new_len + 1e-9 < base_len and new_len < limit_length and not path_has_crossing(newp):
@@ -112,7 +112,7 @@ def two_opt(path: Path, limit_length: float = LEN_LIMIT) -> Path:
                 break
     return p
 
-# ---------- 解单个实例（greedy → 2-opt） ----------
+# ---------- solve for single instance（greedy → 2-opt ----------
 def solve_instance(instance: Dict[str, Any]) -> Path:
     starts = [tuple(p) for p in instance["start_points"]]
     ends   = [tuple(p) for p in instance["end_points"]]
@@ -125,9 +125,9 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
         for e in ends:
             if dist(s, e) >= LEN_LIMIT:
                 continue
-            # 1) greedy 构造
+            # 1) greedy 
             p = greedy_insert_goals(s, e, goals)
-            # 2) 仅做一次 2-opt 后处理（不 refill）
+            # 2) 2-opt 
             p = two_opt(p)
 
             gcount = sum(1 for g in goals if g in p)
@@ -138,7 +138,7 @@ def solve_instance(instance: Dict[str, Any]) -> Path:
                     best_key, best_path = key, p
     return best_path if best_path is not None else []
 
-# ---------- 主函数 ----------
+# ---------- main function ----------
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, help="Path to input JSON with problem instances")
@@ -165,7 +165,7 @@ def main():
         valid = validate_path(instance, path)
         runtime = time.time() - t_start
 
-        # 保存到内存
+
         rows.append([name, gcount, total_goals, percent, f"{length:.2f}", valid, f"{runtime:.4f}"])
 
         if args.verbose:
@@ -177,7 +177,7 @@ def main():
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(solutions, f, ensure_ascii=False, indent=2)
 
-    # 写 CSV log 文件
+    # write CSV log 
     with open("log_greedy2opt.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["instance", "goals_visited", "goals_total", "percent", "length", "valid", "runtime_s"])
