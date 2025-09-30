@@ -1,8 +1,8 @@
-# Research Engineer Technical Test: Route Construction Problem
+# Route Construction Problem
 
 ## Overview
 
-You are tasked with solving a route construction optimization problem. Given three sets of 2D coordinate points, your objective is to construct an optimal path that maximizes the number of goal points visited while satisfying specific constraints.
+sSolving a route construction optimization problem. Given three sets of 2D coordinate points. The objective is to construct an optimal path that maximizes the number of goal points visited while satisfying specific constraints.
 
 ## Problem Statement
 
@@ -33,8 +33,6 @@ Your solution path may include coordinates that **are not** present in any of th
 
 ## Constraints
 
-Your solution must satisfy ALL of the following constraints:
-
 1. **Point Limit**: Maximum of 100 coordinates in your path sequence
 2. **Length Limit**: Total cumulative length of all line segments must be strictly less than 2000
 3. **No Self-Intersection**: The path cannot cross, overlap, or touch itself at any point
@@ -49,7 +47,7 @@ Your solution must satisfy ALL of the following constraints:
 
 ## Solution Format
 
-Submit your solutions as a JSON where keys are instance names and values are arrays of coordinate pairs:
+A JSON file where keys are instance names and values are arrays of coordinate pairs:
 
 ```json
 {
@@ -76,10 +74,9 @@ Submit your solutions as a JSON where keys are instance names and values are arr
 
 ## Code Quality Requirements
 
-Your implementation should be **production-ready** and follow software engineering best practices.
+It should be **production-ready** and follow software engineering best practices.
 
-### Executable Solution
-Your submission must include a main executable file named `solve.py` that can be run from the command line:
+### Execute command
 
 ```bash
 python solve.py --input instances.json --output solution.json
@@ -89,7 +86,7 @@ python solve.py --input instances.json --output solution.json
 - `--input` (required): Path to the input JSON file containing problem instances
 - `--output` (required): Path where the solution JSON file should be written
 
-You are free to add additional command line arguments as needed, such as `--verbose` for detailed logging or `--timeout` for execution limits.
+Additional command line arguments coud be added, such as `--verbose` for detailed logging or `--timeout` for execution limits.
 
 
 ## Example Instance
@@ -159,26 +156,6 @@ Evaluate your solution across the 100 problem instances. Reported performance me
 
 Include any other performance metrics you choose to report.
 
-## Submission Guidelines
-
-### Repository Requirements
-
-1. **Create a private GitHub repository** for your submission
-2. **Commit regularly** as you develop your solution to show your progress
-3. **Include the following files in the root directory**:
-   - `solve.py`: Main executable Python file (see Code Quality Requirements)
-   - `solution.json`: Your solutions in the required JSON format
-   - `report.ipynb`: Jupyter notebook with your analysis and findings
-   - Additional Python source code files containing your implementation
-   - `README.md`: Brief overview of your approach and how to run your code
-   - `requirements.txt`: List of Python dependencies (if any)
-4. Repository shared with guillaume@algo1.ai
-
-### File Format Requirements
-
-1. **solution.json**: Valid JSON mapping instance names to coordinate arrays
-2. **Integer coordinates**: All coordinates must be integers (no decimal places)
-3. **Encoding**: UTF-8 text encoding for all files
 
 ## Input Delivery Format
 
@@ -200,22 +177,7 @@ You will receive the problem instances as a JSON file with the following structu
 }
 ```
 
-## Frequently Asked Questions
 
-**Q: What format should coordinates be in?**  
-A: All coordinates must be integers in your JSON output. No decimal places are allowed.
-
-**Q: Are there time limits for computation?**  
-A: Efficient solutions are preferred, and runtime performance is part of the evaluation criteria. The priority is to maximise the number of goal points visited.
-
-**Q: What programming language should I use?**  
-A: You must use Python for your implementation.
-
-**Q: What if my algorithm doesn't find a valid solution for a problem instance?**  
-A: Returning an empty path (i.e., `[]`) is acceptable, as no solution that violates the constraints should be submitted.
-
-**Q: Can I use external libraries and resources?**  
-A: Yes, you can use external python libraries and online resources including the use of LLM coding agents. You **may not** use off the shelf solvers, and you must implement the optimization algorithm on your own. 
 
 
 ## Runtime Performance Requirements
@@ -227,12 +189,12 @@ Your submission must include runtime performance analysis:
 - Compare different algorithmic strategies you attempted
 - Document performance optimizations implemented
 
-## Notebook Submission
+## Notebook 
 
-In addition to your solution code, submit a Jupyter notebook (`report.ipynb`) that includes:
+A Jupyter notebook (`report.ipynb`) that includes:
 
-1. **Approach Overview**: Description of your algorithmic strategy and reasoning, including all approaches considered
-2. **Implementation Details**: Key components of your solution
+1. **Approach Overview**: Description of the algorithmic strategy and reasoning, including all approaches considered
+2. **Implementation Details**: Key components of the solution
 3. **Performance Analysis**: Runtime analysis across different instance types and sizes
 4. **Results Summary**: Final performance metrics and insights gained
-5. **Visualizations**: Any relevant graphs or charts that illustrate your findings
+5. **Visualizations**: Any relevant graphs or charts that illustrate the findings
